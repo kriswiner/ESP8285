@@ -175,8 +175,8 @@ float   temperature_C, temperature_F, pressure, humidity, altitude; // Scaled ou
 
 uint32_t delt_t = 0, count = 0, sumCount = 0, slpcnt = 0;  // used to control display output rate
 
-const char* ssid     = "NETGEAR16";
-const char* password = "braveroad553";
+const char* ssid     = "YOURSSID";
+const char* password = "yourpassword";
  
 ESP8266WebServer server(80);
  
