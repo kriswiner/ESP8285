@@ -14,15 +14,12 @@
  getting properly scaled accelerometer, gyroscope, and magnetometer data out. Added display functions to 
  allow display to on breadboard monitor. Addition of 9 DoF sensor fusion using open source Madgwick and 
  Mahony filter algorithms to compare with the hardware sensor fusion results.
- Sketch runs on the 3.3 V 8 MHz Pro Mini and the Teensy 3.1.
+ Sketch runs on the 3.3 V ESP8285 Development Board (https://www.tindie.com/products/onehorse/esp8285-development-board/)
  
- This sketch is specifically for the Teensy 3.1 Mini Add-On shield with the EM7180 SENtral sensor hub as master,
+ This sketch is specifically for the Ultimate Sensor Fusion Solution with the EM7180 SENtral sensor hub as master,
  the MPU9250 9-axis motion sensor (accel/gyro/mag) as slave, an MS5637 pressure/temperature sensor as slave, and an M24512DFC
  512kbit (64 kByte) EEPROM as slave all connected via I2C. The SENtral can use the pressure data in the sensor fusion
- and there is a driver for the MS5637 in the SENtral firmware. Also, like the MAX21100, the SENtral
- can be toggled into a bypass mode where the pressure sensor (and EEPROM and MPU9250) may be read directly by the
- Teensy 3.1 host microcontroller. If the read rate is infrequent enough (2 Hz is sufficient since pressure and temperature
- do not change very fast), then the sensor fusion rate is not significantly affected.
+ and there is a driver for the MS5637 in the SENtral firmware.  
  
  The MS5637 is a simple but high resolution pressure sensor, which can be used in its high resolution
  mode but with power consumption of 20 microAmp, or in a lower resolution mode with power consumption of
