@@ -774,7 +774,7 @@ void loop()
   if(eventStatus & 0x02) { // error detected, what is it?
   
   uint8_t errorStatus = readByte(EM7180_ADDRESS, EM7180_ErrorRegister);
-  if(!errorStatus) {
+  if(errorStatus != 0x00) {  // is there an error?
   Serial.print(" EM7180 sensor status = "); Serial.println(errorStatus);
   if(errorStatus == 0x11) Serial.print("Magnetometer failure!");
   if(errorStatus == 0x12) Serial.print("Accelerometer failure!");
@@ -1624,7 +1624,7 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
 {
    uint8_t rawData[6] = {0, 0, 0, 0, 0, 0};
    uint8_t selfTest[6];
-   int16_t gAvg[3], aAvg[3], aSTAvg[3], gSTAvg[3];
+   int32_t gAvg[3] = {0}, aAvg[3] = {0}, aSTAvg[3] = {0}, gSTAvg[3] = {0};
    float factoryTrim[6];
    uint8_t FS = 0;
    
@@ -1699,8 +1699,8 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
  // Report results as a ratio of (STR - FT)/FT; the change from Factory Trim of the Self-Test Response
  // To get percent, must multiply by 100
    for (int i = 0; i < 3; i++) {
-     destination[i]   = 100.0*((float)(aSTAvg[i] - aAvg[i]))/factoryTrim[i];   // Report percent differences
-     destination[i+3] = 100.0*((float)(gSTAvg[i] - gAvg[i]))/factoryTrim[i+3]; // Report percent differences
+     destination[i]   = 100.0*((float)(aSTAvg[i] - aAvg[i]))/factoryTrim[i] - 100.;   // Report percent differences
+     destination[i+3] = 100.0*((float)(gSTAvg[i] - gAvg[i]))/factoryTrim[i+3] - 100.; // Report percent differences
    }
    
 }
