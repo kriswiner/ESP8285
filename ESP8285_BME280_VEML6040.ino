@@ -1,4 +1,4 @@
-/* BME280 and VEML040 Basic Example Code using ESP8285
+/* BME280 and VEML6040 Basic Example Code using ESP8285
  by: Kris Winer
  date: April 29, 2016
  license: Beerware - Use this code however you'd like. If you 
@@ -51,6 +51,7 @@ int32_t   BME280_compensate_T(int32_t adc_T);
 uint32_t  BME280_compensate_H(int32_t adc_H);
 uint16_t  getRGBWdata(int16_t * destination);
 void      enableVEML6040();
+void      initWifi();
 
 //ADC_MODE(ADC_VCC); // to use getVcc, don't use if using battery voltage monotor
 
@@ -174,9 +175,6 @@ int16_t  dig_T2, dig_T3, dig_P2, dig_P3, dig_P4, dig_P5, dig_P6, dig_P7, dig_P8,
 float   temperature_C, temperature_F, pressure, humidity, altitude; // Scaled output of the BME280
 
 uint32_t delt_t = 0, count = 0, sumCount = 0, slpcnt = 0;  // used to control display output rate
-
-const char* ssid     = "YOURSSID";
-const char* password = "yourpassword";
  
 ESP8266WebServer server(80);
  
@@ -232,8 +230,6 @@ void setup()
   Serial.println(0x60, HEX);
   Serial.println(" ");
   
- // delay(1000); 
-
   if(f == 0x60) {
    
   writeByte(BME280_ADDRESS, BME280_RESET, 0xB6); // reset BME280 before initilization
@@ -295,62 +291,12 @@ void setup()
   Serial.print("ESP8285 flash chip size = "); Serial.print(flashChipSize); Serial.println(" bytes");
   uint32_t flashChipSpeed = ESP.getFlashChipSpeed();
   Serial.print("ESP8285 flash chip speed = "); Serial.print(flashChipSpeed); Serial.println(" Hz");
-  uint32_t getVcc = ESP.getVcc();
-  Serial.print("ESP8285 supply voltage = "); Serial.print(getVcc); Serial.println(" volts");
-//  delay(4000); // give some time to read the screen
+//  uint32_t getVcc = ESP.getVcc();
+//  Serial.print("ESP8285 supply voltage = "); Serial.print(getVcc); Serial.println(" volts");
 
-  // Connect to WiFi network
-  WiFi.begin(ssid, password);
-  Serial.print("\n\r \n\rWorking to connect");
- 
-  // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("ESP8285 Environmental Data Server");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
+  initWifi();
   
-/*   
-  server.on("/", handle_root);
-  
-  server.on("/temp", [](){  // if you add this subdirectory to your webserver call, you get text below :)
-    rawTemp =   readBME280Temperature();
-    temperature = (float) BME280_compensate_T(rawTemp)*10.; // temperature in milliCentigrade
-    webString="Temperature: "+String((int)temperature)+" milliC";   // Arduino has a hard time with float to string
-    server.send(200, "text/plain", webString);                 // send to someones browser when asked
-  });
- 
-  server.on("/pressure", [](){  // if you add this subdirectory to your webserver call, you get text below :)
-    rawPress =  readBME280Pressure();
-    pressure = (float) BME280_compensate_P(rawPress)/25.600; // Pressure in microbar
-    webString="Pressure: "+String((int)pressure)+" microBar";
-    server.send(200, "text/plain", webString);               // send to someones browser when asked
-  });
-
-  server.on("/humidity", [](){  // if you add this subdirectory to your webserver call, you get text below :)
-    rawPress =  readBME280Humidity();
-    pressure = (float) BME280_compensate_H(rawHumidity)/1024.; // Pressure in microbar
-    webString="Pressure: "+String((int)pressure)+" microBar";
-    server.send(200, "text/plain", webString);               // send to someones browser when asked
-  });
-
-    server.on("/battery", [](){  // if you add this subdirectory to your webserver call, you get text below :)
-    float VBAT = (1300.0/300.0) * float(analogRead(A0)) / 1.0240; // battery voltage in millivolts
-    webString="Battery Voltage: "+String((int)VBAT)+" milliVolts";
-    server.send(200, "text/plain", webString);               // send to someones browser when asked
-  });
-  */
-     server.on("/ESP8285Data", [](){
+     server.on("/ESP8285Data", [](){ // define web server data
 
     // BME280 Data
     rawTemp =   readBME280Temperature();
@@ -385,25 +331,20 @@ void setup()
 
 void loop()
 {  
-     ArduinoOTA.handle();
- //    WiFi.mode(WIFI_OFF); // turn wifi off temporarily
      
-    delt_t = millis() - count;
-    if (delt_t > 4000) { // update LCD once every 4 seconds independent of read rate
-
     rawPress =  readBME280Pressure();
-    pressure = (float) BME280_compensate_P(rawPress)/25600.; // Pressure in mbar
+    pressure = (float) BME280_compensate_P(rawPress)/25600.0f; // Pressure in mbar
     rawTemp =   readBME280Temperature();
-    temperature_C = (float) BME280_compensate_T(rawTemp)/100.;
+    temperature_C = (float) BME280_compensate_T(rawTemp)/100.0f;
     rawHumidity =   readBME280Humidity();
-    humidity = (float) BME280_compensate_H(rawHumidity)/1024.;
+    humidity = (float) BME280_compensate_H(rawHumidity)/1024.0f;
  
       Serial.println("BME280:");
       Serial.print("Altimeter temperature = "); 
       Serial.print( temperature_C, 2); 
       Serial.println(" C"); // temperature in degrees Celsius
       Serial.print("Altimeter temperature = "); 
-      Serial.print(9.*temperature_C/5. + 32., 2); 
+      Serial.print(9.*temperature_C/5. + 32.0f, 2); 
       Serial.println(" F"); // temperature in degrees Fahrenheit
       Serial.print("Altimeter pressure = "); 
       Serial.print(pressure, 2);  
@@ -436,39 +377,54 @@ void loop()
   // Empirical estimation of the correlated color temperature CCT:
   // see https://www.vishay.com/docs/84331/designingveml6040.pdf
       float temp = ( (float) (RGBWData[0] - RGBWData[2])/(float) RGBWData[1] );
-      float CCT = 4278.6f*pow(temp, -1.2455) + 0.5f;
+      float CCT = 4278.6f*pow(temp, -1.2455f) + 0.5f;
 
       Serial.print("Correlated Color Temperature = "); Serial.print(CCT, 2); Serial.println(" Kelvin");
       Serial.println("  ");
 
-      float VBAT = (1300.0/300.0) * float(analogRead(A0)) / 1024.0;  
+      float VBAT = (1300.0f/300.0f) * float(analogRead(A0)) / 1024.0f;  
       Serial.print("Battery Voltage = "); Serial.print(VBAT, 2); Serial.println(" V");
- //     delay(100);
- //     slpcnt += delt_t;
- //     if(slpcnt > 10000) {  // if 5 seconds has elapsed
- //     ESP.deepSleep(10000000, WAKE_RF_DEFAULT); // sleep for ten second then wake up?
- //     slpcnt = 0;
- //     }
       
-  
-      digitalWrite(myLed, HIGH);
+      digitalWrite(myLed, HIGH); // flash the blue led
       delay(100);
       digitalWrite(myLed, LOW);
-      
-      count = millis(); 
-    }     
+         
+      server.handleClient(); // update web server page
 
- //     delay(4000);
- //     WiFi.mode(WIFI_STA);
-      delay(1000);
-      server.handleClient();
+      delay(5000); // wait for next update
  
 }
 
 //===================================================================================================================
 //====== Set of useful function to access acceleration. gyroscope, magnetometer, and temperature data
 //===================================================================================================================
-uint32_t readBME280Temperature()
+void initWifi() {
+  const char* ssid     = "XXXXXXXXXX";
+  const char* password = "xxxxxxxxxxxx";
+ // Connect to WiFi network
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("\n\r \n\rWorking to connect");
+
+ // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("ESP8285 Environmental Data Server");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
+  }
+  
+  uint32_t readBME280Temperature()
 {
   uint8_t rawData[3];  // 20-bit pressure register data stored here
   readBytes(BME280_ADDRESS, BME280_TEMP_MSB, 3, &rawData[0]);  
