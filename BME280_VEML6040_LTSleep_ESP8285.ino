@@ -56,7 +56,7 @@ void      BME280Init();
 uint32_t  BME280_compensate_P(int32_t adc_P);
 int32_t   BME280_compensate_T(int32_t adc_T);
 uint32_t  BME280_compensate_H(int32_t adc_H);
-uint16_t  getRGBWdata(int16_t * destination);
+uint16_t  getRGBWdata(uint16_t * destination);
 void      enableVEML6040();
 void      initWifi();
 void      doDelays();
@@ -167,7 +167,7 @@ int32_t t_fine;
 // Specify VEML6070 Integration time
 uint8_t IT = IT_160;
 uint8_t ITime = 160;  // milliseconds
-int16_t RGBWData[4] = {0, 0, 0, 0};
+uint16_t RGBWData[4] = {0, 0, 0, 0};
 float GSensitivity = 0.25168/((float) (IT + 1)); // ambient light sensitivity increases with integration time
 float redLight, greenLight, blueLight, ambientLight;
 
@@ -177,13 +177,13 @@ uint32_t rawPress, rawTemp;   // pressure and temperature raw count output for B
 uint16_t rawHumidity;  // variables to hold raw BME280 humidity value
 
 // BME280 compensation parameters
-uint8_t dig_H1, dig_H3, dig_H6;
+uint8_t  dig_H1, dig_H3, dig_H6;
 uint16_t dig_T1, dig_P1, dig_H4, dig_H5;
 int16_t  dig_T2, dig_T3, dig_P2, dig_P3, dig_P4, dig_P5, dig_P6, dig_P7, dig_P8, dig_P9, dig_H2;
 
 float   temperature_C, temperature_F, pressure, humidity, altitude; // Scaled output of the BME280
 
-uint32_t delt_t = 0, count = 0, sumCount = 0, slpcnt = 0;  // used to control display output rate
+uint32_t delt_t = 0, count = 0, sumCount = 0;  // used to control display output rate
 
 const char* ssid     = "NETGEAR16";
 const char* password = "braveroad553";
@@ -333,7 +333,8 @@ void setup()
     ambientLight = (float)RGBWData[1]*GSensitivity;
 
     // Battery Voltage
-    VBAT = (1300.0/300.0) * (float)(analogRead(A0)) / 1024.0; // battery voltage in volts
+    VBAT = (1300.0/300.0) * (float)(analogRead(A0)) / 1024.0; // LiPo battery voltage in volts
+//    VBAT = (1100.0/100.0) * (float)(analogRead(A0)) / 1024.0; // 9V battery voltage in volts
     
     createHTML(temperature_C, temperature_F, pressure, altitude, humidity, redLight, greenLight, blueLight, ambientLight, VBAT);
     server.send(200, "text/html", webString);               // send to someone's browser when asked
@@ -397,7 +398,8 @@ void loop()
       Serial.print("Correlated Color Temperature = "); Serial.print(CCT, 2); Serial.println(" Kelvin");
       Serial.println("  ");
 
-      float VBAT = (1300.0/300.0) * float(analogRead(A0)) / 1024.0;  
+      float VBAT = (1300.0/300.0) * float(analogRead(A0)) / 1024.0;  // LiPo battery
+//      float VBAT = (1300.0/100.0) * float(analogRead(A0)) / 1024.0;  // 9 V battery
       Serial.print("Battery Voltage = "); Serial.print(VBAT, 2); Serial.println(" V");    
   
       digitalWrite(myLed, HIGH); // blink blue led
@@ -554,7 +556,7 @@ var = (var > 419430400 ? 419430400 : var);
 return(uint32_t)(var >> 12);
 }
 
-uint16_t getRGBWdata(int16_t * destination)
+uint16_t getRGBWdata(uint16_t * destination)
 {
     for (int j = 0; j < 4; j++)
     {
@@ -570,7 +572,7 @@ uint16_t getRGBWdata(int16_t * destination)
         rawData[i++] = Wire.read();       // Put read results in the Rx buffer
     }     
     Wire.endTransmission();
-    destination[j] = ((int16_t) rawData[1] << 8) | rawData[0];
+    destination[j] = ((uint16_t) rawData[1] << 8) | rawData[0];
     }
  
 }
