@@ -348,10 +348,10 @@ void setup()
 
 void loop()
 {  
-    rawPress =  readBME280Pressure();
-    pressure = (float) BME280_compensate_P(rawPress)/25600.; // Pressure in mbar
     rawTemp =   readBME280Temperature();
     temperature_C = (float) BME280_compensate_T(rawTemp)/100.;
+    rawPress =  readBME280Pressure();
+    pressure = (float) BME280_compensate_P(rawPress)/25600.; // Pressure in mbar
     rawHumidity =   readBME280Humidity();
     humidity = (float) BME280_compensate_H(rawHumidity)/1024.;
  
