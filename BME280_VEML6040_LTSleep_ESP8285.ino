@@ -414,8 +414,8 @@ void loop()
 //====== Set of useful function to access acceleration, gyroscope, magnetometer, and temperature data
 //===================================================================================================================
 void initWifi() {
-  const char* ssid     = "NETGEAR16";
-  const char* password = "braveroad553";
+  const char* ssid     = "YOURSSID";
+  const char* password = "yourpassword";
  // Connect to WiFi network
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
